@@ -1,8 +1,8 @@
 #source file search paths
-VPATH = ./src 
+VPATH = ./src ./src/ext
 
 	# compiler include search paths
-INCS = -I./include \
+INCS = -I./src/ext \
 	-I../ravencode/pub/src \
 	-I../raven-set \
 	-I../boost/boost1_78 
