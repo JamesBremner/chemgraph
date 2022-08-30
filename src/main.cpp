@@ -13,9 +13,69 @@ class cChemGraph : public raven::graph::cGraph
 {
 public:
     void read(const std::string &sin);
+    void readSMILES(const std::string &sin);
     std::string viz();
 };
 
+void cChemGraph::readSMILES(const std::string &sin)
+{
+    std::cout << sin << "\n";
+    char token;
+    int branch;   // index of atom where branch occurs
+    int src = -1; // index of atom waiting for bond
+    int ring = -1;
+    bool closebracket = false;
+    int idx = 0;
+    for (int p = 0; p < sin.length(); p++)
+    {
+        token = sin[p];
+        std::cout << token << " " << branch << " " << src << "\n";
+        switch (token)
+        {
+        case 'C':
+        case 'N':
+        case 'O':
+            findNode(findoradd(std::to_string(idx))).myColor = token;
+            idx++;
+            if (src == -1)
+            {
+                // root atom
+                src = idx - 1;
+                break;
+            }
+            if (closebracket)
+            {
+                addLink(std::to_string(branch), std::to_string(idx - 1));
+                closebracket = false;
+            }
+            else
+            {
+                addLink(std::to_string(src), std::to_string(idx - 1));
+            }
+            src = idx - 1;
+            break;
+
+        case '=':
+            break;
+        case '(':
+            branch = idx - 1;
+            break;
+        case ')':
+            closebracket = true;
+            break;
+        case '1':
+            if (ring == -1)
+            {
+                ring = idx - 1;
+                break;
+            } else{
+                addLink(std::to_string( ring),std::to_string( src ));
+                ring = -1;
+            }
+            break;
+        }
+    }
+}
 void cChemGraph::read(const std::string &sin)
 {
     std::istringstream iss(sin);
@@ -51,16 +111,16 @@ std::string cChemGraph::viz()
     for (auto n : nodes())
     {
         sviz << n.second.myName
-          << " [label=\"" << n.second.myColor 
-          << "\"  penwidth = 3.0 ];\n";
+             << " [label=\"" << n.second.myColor
+             << "\"  penwidth = 3.0 ];\n";
     }
     for (auto &e : links())
     {
         if (e.first.first > e.first.second)
             continue;
-        sviz << node(e.first.first).myName << "--"
-          << node(e.first.second).myName
-          << "\n";
+        sviz << src(e).myName << "--"
+             << dst(e).myName
+             << "\n";
     }
     sviz << "}\n";
 
@@ -72,7 +132,7 @@ std::string cChemGraph::viz()
         throw std::runtime_error("Cannot open " + gdot.string());
     f << sviz.str();
 
-        f.close();
+    f.close();
 
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
@@ -84,7 +144,7 @@ std::string cChemGraph::viz()
     auto sample = path / "sample.png";
     std::string scmd = "dot -Kfdp -n -Tpng -Tdot -o " + sample.string() + " " + gdot.string();
 
-    //std::cout << scmd << "\n";
+    // std::cout << scmd << "\n";
 
     // Retain keyboard focus, minimize module2 window
     si.wShowWindow = SW_SHOWNOACTIVATE | SW_MINIMIZE;
@@ -153,7 +213,10 @@ public:
               {50, 50, 1000, 500}),
           lb(wex::maker::make<wex::label>(fm))
     {
-        myG.read("n 1 C n 2 O l 1 2");
+        // myG.read("n 1 C n 2 O l 1 2");
+        // myG.readSMILES("CNCC");
+        //myG.readSMILES("CN(C)C");
+        myG.readSMILES("C1CCCCC1");
         std::cout << myG.viz();
 
         lb.move(50, 50, 100, 30);

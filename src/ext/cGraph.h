@@ -283,6 +283,14 @@ namespace raven
             {
                 return myG.at(i);
             }
+            cNode& src( const linkmap_t::value_type& e)
+            {
+                return node(e.first.first);
+            }
+            cNode& dst( const linkmap_t::value_type& e)
+            {
+                return node(e.first.second);
+            }
             /// index of node
             int node( const cNode& node )
             {
