@@ -27,6 +27,7 @@ void cChemGraph::readSMILES(const std::string &sin)
     std::vector<int> ring(10,-1);
     int ringID;
     bool closebracket = false;
+    bool square = false;
     int idx = 0;
     for (int p = 0; p < sin.length(); p++)
     {
@@ -57,7 +58,13 @@ void cChemGraph::readSMILES(const std::string &sin)
             src = idx - 1;
             break;
 
-        case '=':
+        case '=': case 'H':
+            break;
+        case '[':
+            square = true;
+            break;
+        case ']':
+            square = false;
             break;
         case '(':
             branch = idx - 1;
@@ -66,11 +73,12 @@ void cChemGraph::readSMILES(const std::string &sin)
             closebracket = true;
             break;
         case '1': case '2':
+            if( square )
+                break;
             ringID = (int)token - 48;
             if (ring[ringID] == -1)
             {
                 ring[ringID] = idx - 1;
-                break;
             }
             else
             {
