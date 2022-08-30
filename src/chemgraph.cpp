@@ -102,12 +102,18 @@ void cChemGraph::read(const std::string &sin)
 }
 std::string cChemGraph::viz()
 {
+    std::map<std::string,std::string> mpColor;
+    mpColor.insert( {"C","grey"} );
+    mpColor.insert( {"O","red"} );
+    mpColor.insert( {"N","green"} );
+
     std::stringstream sviz;
     sviz << "graph G {\n";
     for (auto n : nodes())
-    {
+    {   
         sviz << n.second.myName
              << " [label=\"" << n.second.myColor
+             << "\" color = \"" << mpColor[ n.second.myColor ]
              << "\"  penwidth = 3.0 ];\n";
     }
     for (auto &e : links())
