@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <wex.h>
+#include <window2file.h>
 #include "cStarterGUI.h"
 #include "cGraph.h"
 
@@ -19,11 +20,12 @@ public:
 
 void cChemGraph::readSMILES(const std::string &sin)
 {
-    std::cout << sin << "\n";
+    myG.clear();
     char token;
     int branch;   // index of atom where branch occurs
     int src = -1; // index of atom waiting for bond
-    int ring = -1;
+    std::vector<int> ring(10,-1);
+    int ringID;
     bool closebracket = false;
     int idx = 0;
     for (int p = 0; p < sin.length(); p++)
@@ -63,14 +65,17 @@ void cChemGraph::readSMILES(const std::string &sin)
         case ')':
             closebracket = true;
             break;
-        case '1':
-            if (ring == -1)
+        case '1': case '2':
+            ringID = (int)token - 48;
+            if (ring[ringID] == -1)
             {
-                ring = idx - 1;
+                ring[ringID] = idx - 1;
                 break;
-            } else{
-                addLink(std::to_string( ring),std::to_string( src ));
-                ring = -1;
+            }
+            else
+            {
+                addLink(std::to_string(ring[ringID]), std::to_string(src));
+                ring[ringID] = -1;
             }
             break;
         }
@@ -211,23 +216,49 @@ public:
         : cStarterGUI(
               "Starter",
               {50, 50, 1000, 500}),
-          lb(wex::maker::make<wex::label>(fm))
+          ebsmiles(wex::maker::make<wex::editbox>(fm)),
+          bnsmiles(wex::maker::make<wex::button>(fm)),
+          graphPanel(wex::maker::make<wex::panel>(fm))
     {
         // myG.read("n 1 C n 2 O l 1 2");
         // myG.readSMILES("CNCC");
-        //myG.readSMILES("CN(C)C");
-        myG.readSMILES("C1CCCCC1");
-        std::cout << myG.viz();
+        // myG.readSMILES("CN(C)C");
+        // myG.readSMILES("C1CCCCC1");
+        // std::cout << myG.viz();
 
-        lb.move(50, 50, 100, 30);
-        lb.text("Hello World");
+        ebsmiles.move(50, 50, 300, 30);
+        ebsmiles.text("");
+        bnsmiles.move(400, 50, 100, 30);
+        bnsmiles.text("Vizualize");
+        bnsmiles.events().click(
+            [this]
+            {
+                myG.readSMILES(ebsmiles.text());
+                std::cout << myG.viz();
+                graphPanel.update();
+            });
+
+                
+    graphPanel.move(0, 100, 800, 750);
+
+        graphPanel.events().draw(
+            [&](PAINTSTRUCT &ps)
+            {
+                // fill graph panel with image produced by graphviz
+                wex::window2file w2f;
+                auto path = std::filesystem::temp_directory_path();
+                auto sample = path / "sample.png";
+                w2f.draw(graphPanel, sample.string());
+            });
 
         show();
         run();
     }
 
 private:
-    wex::label &lb;
+    wex::editbox &ebsmiles;
+    wex::button &bnsmiles;
+    wex::panel &graphPanel;
     cChemGraph myG;
 };
 
