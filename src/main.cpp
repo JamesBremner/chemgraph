@@ -10,7 +10,6 @@
 #include "cStarterGUI.h"
 #include "chemgraph.h"
 
-
 class cGUI : public cStarterGUI
 {
 public:
@@ -20,17 +19,12 @@ public:
               {50, 50, 1000, 500}),
           ebsmiles(wex::maker::make<wex::editbox>(fm)),
           bnsmiles(wex::maker::make<wex::button>(fm)),
-          graphPanel(wex::maker::make<wex::panel>(fm))
+          graphPanel(wex::maker::make<wex::panel>(fm)),
+          lbNodefeatures(wex::maker::make<wex::label>(fm)),
+          pnAtoms(wex::maker::make<wex::panel>(fm)),
+          lbBondfeatures(wex::maker::make<wex::label>(fm)),
+          pnBonds(wex::maker::make<wex::panel>(fm))
     {
-        // myG.read("n 1 C n 2 O l 1 2");
-        // myG.readSMILES("CNCC");
-        // myG.readSMILES("CN(C)C");
-        // myG.readSMILES("C1CCCCC1");
-        // std::cout << myG.viz();
-
-        // myG.fragment(
-        //     "C1=CC2=C(C=C1O)C(=CN2)CCN",
-        //     "NC[CH2]:O:O:C"        );
 
         ebsmiles.move(50, 50, 300, 30);
         ebsmiles.text("");
@@ -42,10 +36,15 @@ public:
                 myG.readSMILES(ebsmiles.text());
                 std::cout << myG.viz();
                 graphPanel.update();
+
+                readAtomFeatures();
+
+                readBondFeatures();
+
+                fm.update();
             });
 
-                
-    graphPanel.move(0, 100, 800, 750);
+        graphPanel.move(0, 100, 800, 750);
 
         graphPanel.events().draw(
             [&](PAINTSTRUCT &ps)
@@ -57,6 +56,13 @@ public:
                 w2f.draw(graphPanel, sample.string());
             });
 
+        lbNodefeatures.move(400, 100, 100, 30);
+        lbNodefeatures.text("Atom Features");
+        pnAtoms.move(400, 140, 300, 300);
+        lbBondfeatures.move(400, 200, 100, 30);
+        lbBondfeatures.text("Bond Features");
+        pnBonds.move(400, 240, 300, 300);
+
         show();
         run();
     }
@@ -65,8 +71,32 @@ private:
     wex::editbox &ebsmiles;
     wex::button &bnsmiles;
     wex::panel &graphPanel;
+    wex::label &lbNodefeatures;
+    wex::panel &pnAtoms;
+    wex::label &lbBondfeatures;
+    wex::panel &pnBonds;
     cChemGraph myG;
+
+    void readAtomFeatures();
+    void readBondFeatures();
 };
+
+void cGUI::readAtomFeatures()
+{
+    std::ifstream t("atomfeatures.txt");
+    std::stringstream buffer;
+    buffer << t.rdbuf();
+    myG.readNodeFeatures(buffer.str());
+    pnBonds.text(buffer.str());
+}
+void cGUI::readBondFeatures()
+{
+    std::ifstream t("bondfeatures.txt");
+    std::stringstream buffer;
+    buffer << t.rdbuf();
+    myG.readBondFeatures(buffer.str());
+    pnBonds.text(buffer.str());
+}
 
 main()
 {

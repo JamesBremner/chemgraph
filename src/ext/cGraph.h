@@ -148,6 +148,7 @@ namespace raven
                 }
                 catch (...)
                 {
+                    return -1;
                 }
                 return -1;
             }

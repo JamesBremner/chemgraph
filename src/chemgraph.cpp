@@ -231,3 +231,26 @@ std::map<std::string,int> cChemGraph::countAtoms()
     }
     return mpCount;
 }
+
+    void cChemGraph::readNodeFeatures(const std::string &sin)
+    {
+        // each line is one feature value for every node
+        std::string line;
+        std::istringstream ssin( sin );
+        while( getline(ssin, line))
+        {
+            std::vector<int> vf;
+            std::istringstream sline( line );
+            for( int kn = 0; kn < nodeCount(); kn++ ) {
+                int v;
+                sline >> v;
+                vf.push_back( v );
+
+            }
+            myNodeFeatures.push_back( vf );
+        }
+    }
+    void cChemGraph::readBondFeatures(const std::string &sin)
+    {
+
+    }
