@@ -9,6 +9,7 @@ void cChemGraph::readSMILES(const std::string &sin)
     int src = -1; // index of atom waiting for bond
     std::vector<int> ring(10,-1);
     int ringID;
+    int bond = 1;
     bool closebracket = false;
     bool square = false;
     int idx = 0;
@@ -31,17 +32,28 @@ void cChemGraph::readSMILES(const std::string &sin)
             }
             if (closebracket)
             {
-                addLink(std::to_string(branch), std::to_string(idx - 1));
+                addLink(
+                    std::to_string(branch),
+                     std::to_string(idx - 1),
+                     bond );
                 closebracket = false;
             }
             else
             {
-                addLink(std::to_string(src), std::to_string(idx - 1));
+                addLink(
+                    std::to_string(src),
+                     std::to_string(idx - 1),
+                     bond );
             }
+            bond = 1;
             src = idx - 1;
             break;
 
-        case '=': case 'H':
+        case '=': 
+            bond = 2;
+            break;
+        case 'H':
+            // Hydrogen is ignored
             break;
         case '[':
             square = true;
@@ -120,8 +132,12 @@ std::string cChemGraph::viz()
     {
         if (e.first.first > e.first.second)
             continue;
+        std::string color = "";
+        if( e.second.myCost == 2 )
+            color = " [penwidth = 3.0]";
         sviz << src(e).myName << "--"
              << dst(e).myName
+             << color
              << "\n";
     }
     sviz << "}\n";
@@ -204,4 +220,14 @@ std::string cChemGraph::viz()
     Sleep(1000);
 
     return sviz.str();
+}
+
+std::map<std::string,int> cChemGraph::countAtoms() 
+{
+    std::map<std::string,int> mpCount;
+    for (const auto& n : nodes())
+    {
+        mpCount[ n.second.myColor ]++;
+    }
+    return mpCount;
 }

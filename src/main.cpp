@@ -16,7 +16,7 @@ class cGUI : public cStarterGUI
 public:
     cGUI()
         : cStarterGUI(
-              "Starter",
+              "ChemGraph",
               {50, 50, 1000, 500}),
           ebsmiles(wex::maker::make<wex::editbox>(fm)),
           bnsmiles(wex::maker::make<wex::button>(fm)),
@@ -27,6 +27,10 @@ public:
         // myG.readSMILES("CN(C)C");
         // myG.readSMILES("C1CCCCC1");
         // std::cout << myG.viz();
+
+        // myG.fragment(
+        //     "C1=CC2=C(C=C1O)C(=CN2)CCN",
+        //     "NC[CH2]:O:O:C"        );
 
         ebsmiles.move(50, 50, 300, 30);
         ebsmiles.text("");
