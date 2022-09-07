@@ -10,6 +10,66 @@
 #include "cStarterGUI.h"
 #include "chemgraph.h"
 
+class cCompound
+{
+public:
+    bool read(std::string &line);
+
+private:
+    std::string mySMILES;
+    int cid;
+};
+
+class cCompoundVector
+{
+public:
+    void read(const std::string &fname);
+
+private:
+    std::vector<cCompound> myCompound;
+};
+
+bool cCompound::read(std::string &line)
+{
+    int p = line.find("\"");
+    while (p != -1)
+    {
+        int q = line.find("\"", p + 1);
+        line = line.substr(0, p) + line.substr(q+1 );
+        p = line.find("\"");
+    }
+    std::string a;
+    std::vector<std::string> cols;
+    for (
+        std::stringstream sst(line);
+        getline(sst, a, ',');)
+        cols.push_back(a);
+    if( cols.size() < 14 )
+        return false;
+    cid = atoi(cols[0].c_str());
+    mySMILES = cols[13];
+    return true;
+
+}
+
+void cCompoundVector::read(const std::string &fname)
+{
+    std::ifstream f(fname);
+    if (!f.is_open())
+        throw std::runtime_error(
+            "cCompoundVector::read cannot open input file");
+
+    std::string line;
+    getline(f, line);
+    while (getline(f, line))
+    {
+        cCompound C;
+        if( ! C.read(line) )
+            continue;
+        myCompound.push_back(C);
+    }
+}
+
 class cGUI : public cStarterGUI
 {
 public:
@@ -25,6 +85,8 @@ public:
           lbBondfeatures(wex::maker::make<wex::label>(fm)),
           pnBonds(wex::maker::make<wex::panel>(fm))
     {
+        cCompoundVector vC;
+        vC.read("../data/PubChem_compound_list.csv");
 
         ebsmiles.move(50, 50, 300, 30);
         ebsmiles.text("");
