@@ -9,66 +9,7 @@
 #include <window2file.h>
 #include "cStarterGUI.h"
 #include "chemgraph.h"
-
-class cCompound
-{
-public:
-    bool read(std::string &line);
-
-private:
-    std::string mySMILES;
-    int cid;
-};
-
-class cCompoundVector
-{
-public:
-    void read(const std::string &fname);
-
-private:
-    std::vector<cCompound> myCompound;
-};
-
-bool cCompound::read(std::string &line)
-{
-    int p = line.find("\"");
-    while (p != -1)
-    {
-        int q = line.find("\"", p + 1);
-        line = line.substr(0, p) + line.substr(q+1 );
-        p = line.find("\"");
-    }
-    std::string a;
-    std::vector<std::string> cols;
-    for (
-        std::stringstream sst(line);
-        getline(sst, a, ',');)
-        cols.push_back(a);
-    if( cols.size() < 14 )
-        return false;
-    cid = atoi(cols[0].c_str());
-    mySMILES = cols[13];
-    return true;
-
-}
-
-void cCompoundVector::read(const std::string &fname)
-{
-    std::ifstream f(fname);
-    if (!f.is_open())
-        throw std::runtime_error(
-            "cCompoundVector::read cannot open input file");
-
-    std::string line;
-    getline(f, line);
-    while (getline(f, line))
-    {
-        cCompound C;
-        if( ! C.read(line) )
-            continue;
-        myCompound.push_back(C);
-    }
-}
+#include "cCompound.h"
 
 class cGUI : public cStarterGUI
 {
@@ -85,7 +26,7 @@ public:
           lbBondfeatures(wex::maker::make<wex::label>(fm)),
           pnBonds(wex::maker::make<wex::panel>(fm))
     {
-        cCompoundVector vC;
+
         vC.read("../data/PubChem_compound_list.csv");
 
         ebsmiles.move(50, 50, 300, 30);
@@ -99,9 +40,11 @@ public:
                 std::cout << myG.viz();
                 graphPanel.update();
 
-                readAtomFeatures();
+                // readAtomFeatures();
 
-                readBondFeatures();
+                // readBondFeatures();
+
+                pnAtoms.text(vC.closest(ebsmiles.text()));
 
                 fm.update();
             });
@@ -119,11 +62,12 @@ public:
             });
 
         lbNodefeatures.move(400, 100, 100, 30);
-        lbNodefeatures.text("Atom Features");
-        pnAtoms.move(400, 140, 300, 300);
-        lbBondfeatures.move(400, 200, 100, 30);
-        lbBondfeatures.text("Bond Features");
-        pnBonds.move(400, 240, 300, 300);
+        lbNodefeatures.text("Cluster");
+        pnAtoms.move(400, 140, 500, 600);
+        pnAtoms.fontName("courier");
+        // lbBondfeatures.move(400, 200, 100, 30);
+        // lbBondfeatures.text("Bond Features");
+        // pnBonds.move(400, 240, 300, 300);
 
         show();
         run();
@@ -138,6 +82,7 @@ private:
     wex::label &lbBondfeatures;
     wex::panel &pnBonds;
     cChemGraph myG;
+    cCompoundVector vC;
 
     void readAtomFeatures();
     void readBondFeatures();
