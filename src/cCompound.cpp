@@ -88,22 +88,22 @@ int cCompound::EditDistance(
 std::string cCompound::text() const
 {
     std::stringstream ss;
-    ss << std::setw(20) << std::to_string(cid) + " " + mySMILES + " " + myName;
+    ss << std::setw(10) << std::to_string(cid) 
+        << " " << mySMILES << " " << myName;
     return ss.str();
 }
 
-std::string cCompoundVector::closest(
+std::vector<std::string> cCompoundVector::closest(
     const std::string &SMILES)
 {
-    std::string ret = "CID       SMILES            Name\n";
+    std::vector<std::string> ret { "CID       SMILES            Name" };
     cCompound C;
     C.setSMILES(SMILES);
     for (auto &t : myCompound)
     {
         if (C.EditDistance(t) < 5)
         {
-            // std::cout << t.id() << " "<< t.getSMILES() << ", ";
-            ret += t.text() + "\n";
+            ret.push_back( t.text() );
         }
     }
     return ret;

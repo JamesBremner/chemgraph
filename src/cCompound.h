@@ -54,7 +54,7 @@ public:
     /// @param[in] SMILES string to compare
     /// @return human readable list of the closest compounds
     
-    std::string closest(
+    std::vector<std::string> closest(
         const std::string &SMILES);
 
 private:

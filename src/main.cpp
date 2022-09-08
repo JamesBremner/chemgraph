@@ -21,17 +21,17 @@ public:
           ebsmiles(wex::maker::make<wex::editbox>(fm)),
           bnsmiles(wex::maker::make<wex::button>(fm)),
           graphPanel(wex::maker::make<wex::panel>(fm)),
-          lbNodefeatures(wex::maker::make<wex::label>(fm)),
-          pnAtoms(wex::maker::make<wex::panel>(fm)),
+          bnCluster(wex::maker::make<wex::button>(fm)),
+          lsCluster(wex::maker::make<wex::list>(fm)),
           lbBondfeatures(wex::maker::make<wex::label>(fm)),
           pnBonds(wex::maker::make<wex::panel>(fm))
     {
 
         vC.read("../data/PubChem_compound_list.csv");
 
-        ebsmiles.move(50, 50, 300, 30);
+        ebsmiles.move(30, 10, 300, 30);
         ebsmiles.text("");
-        bnsmiles.move(400, 50, 100, 30);
+        bnsmiles.move(100, 50, 100, 30);
         bnsmiles.text("Vizualize");
         bnsmiles.events().click(
             [this]
@@ -41,15 +41,12 @@ public:
                 graphPanel.update();
 
                 // readAtomFeatures();
-
                 // readBondFeatures();
-
-                pnAtoms.text(vC.closest(ebsmiles.text()));
 
                 fm.update();
             });
 
-        graphPanel.move(0, 100, 800, 750);
+        graphPanel.move(0, 100, 350, 750);
 
         graphPanel.events().draw(
             [&](PAINTSTRUCT &ps)
@@ -61,10 +58,29 @@ public:
                 w2f.draw(graphPanel, sample.string());
             });
 
-        lbNodefeatures.move(400, 100, 100, 30);
-        lbNodefeatures.text("Cluster");
-        pnAtoms.move(400, 140, 500, 600);
-        pnAtoms.fontName("courier");
+        bnCluster.move(400, 50, 100, 30);
+        bnCluster.text("Cluster");
+        bnCluster.events().click(
+            [this]
+            {
+                lsCluster.clear();
+                for (auto &l : vC.closest(ebsmiles.text()))
+                {
+                    lsCluster.add(l);
+                }
+
+                fm.update();
+            });
+
+        lsCluster.move(400, 140, 500, 300);
+        lsCluster.fontName("courier");
+        lsCluster.events().select(
+            lsCluster.id(),
+            [this]
+            {
+                ClusterMemberSelected();
+            });
+
         // lbBondfeatures.move(400, 200, 100, 30);
         // lbBondfeatures.text("Bond Features");
         // pnBonds.move(400, 240, 300, 300);
@@ -77,8 +93,8 @@ private:
     wex::editbox &ebsmiles;
     wex::button &bnsmiles;
     wex::panel &graphPanel;
-    wex::label &lbNodefeatures;
-    wex::panel &pnAtoms;
+    wex::button &bnCluster;
+    wex::list &lsCluster;
     wex::label &lbBondfeatures;
     wex::panel &pnBonds;
     cChemGraph myG;
@@ -86,7 +102,20 @@ private:
 
     void readAtomFeatures();
     void readBondFeatures();
+    void ClusterMemberSelected();
 };
+
+void cGUI::ClusterMemberSelected()
+{
+    auto s = lsCluster.selectedText();
+    auto SMILES = s.substr(
+        11,
+        s.find(" ", 11) - 11);
+    cChemGraph G;
+    G.readSMILES(SMILES);
+    G.viz();
+    graphPanel.update();
+}
 
 void cGUI::readAtomFeatures()
 {
