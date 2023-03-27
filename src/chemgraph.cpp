@@ -1,3 +1,4 @@
+#include <windows.h>
 #include <filesystem>
 #include <fstream>
 #include "chemgraph.h"

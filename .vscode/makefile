@@ -3,12 +3,12 @@ VPATH = ./src ./src/ext
 
 	# compiler include search paths
 INCS = -I./src/ext \
-	-I../ravencode/pub/src \
+	-I../windex/include \
 	-I../raven-set \
 	-I../boost/boost1_78 
 
 LIBS = \
-	-lgdiplus -lgdi32 -lcomdlg32 -lstdc++fs 
+	-lgdiplus -lgdi32 -lcomdlg32 -lstdc++fs -lComctl32
 	# -L../boost/boost1_78/lib \
 	# 	-lboost_system-mgw11-mt-x64-1_78 \
 	# 	-lboost_program_options-mgw11-mt-x64-1_78 \
@@ -19,7 +19,7 @@ static_link_flags = -static-libstdc++ -static-libgcc -static
 
 # folders
 ODIR = ./.vscode/obj
-RDIR = ../ravencode/pub/src
+
 
 OPT = -g
 CCflags = -std=c++17 $(OPT) -D_mingw_
