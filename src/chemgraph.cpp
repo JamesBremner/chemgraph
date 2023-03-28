@@ -1,10 +1,11 @@
 #include <windows.h>
 #include <filesystem>
+#include <iostream>
 #include <fstream>
 #include "chemgraph.h"
 void cChemGraph::readSMILES(const std::string &sin)
 {
-    myG.clear();
+    clear();
     char token;
     int branch;   // index of atom where branch occurs
     int src = -1; // index of atom waiting for bond
@@ -23,7 +24,7 @@ void cChemGraph::readSMILES(const std::string &sin)
         case 'C':
         case 'N':
         case 'O':
-            findNode(findoradd(std::to_string(idx))).myColor = token;
+            wVertexAttr(find((std::to_string(idx))),{std::to_string(token)});
             idx++;
             if (src == -1)
             {
@@ -33,18 +34,18 @@ void cChemGraph::readSMILES(const std::string &sin)
             }
             if (closebracket)
             {
-                addLink(
+                int ie = add(
                     std::to_string(branch),
-                     std::to_string(idx - 1),
-                     bond );
+                     std::to_string(idx - 1));
+                wEdgeAttr(ie,{std::to_string(bond)});
                 closebracket = false;
             }
             else
             {
-                addLink(
+                int ie = add(
                     std::to_string(src),
-                     std::to_string(idx - 1),
-                     bond );
+                     std::to_string(idx - 1));
+                wEdgeAttr(ie,{std::to_string(bond)});
             }
             bond = 1;
             src = idx - 1;
@@ -78,7 +79,7 @@ void cChemGraph::readSMILES(const std::string &sin)
             }
             else
             {
-                addLink(std::to_string(ring[ringID]), std::to_string(src));
+                add(std::to_string(ring[ringID]), std::to_string(src));
                 ring[ringID] = -1;
             }
             break;
@@ -101,13 +102,14 @@ void cChemGraph::read(const std::string &sin)
         case 'n':
             iss >> nid;
             iss >> satom;
-            findNode(findoradd(nid)).myColor = satom;
+            //findNode(findoradd(nid)).myColor = satom;
+            
             break;
 
         case 'l':
             iss >> nid;
             iss >> nid2;
-            addLink(nid, nid2);
+            add(nid, nid2);
             break;
         }
         lid = 'e';

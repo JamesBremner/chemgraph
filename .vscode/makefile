@@ -5,7 +5,7 @@ VPATH = ./src ./src/ext
 INCS = -I./src/ext \
 	-I../windex/include \
 	-I../raven-set \
-	-I../boost/boost1_78 
+	-I../pathfinder/src
 
 LIBS = \
 	-lgdiplus -lgdi32 -lcomdlg32 -lstdc++fs -lComctl32
