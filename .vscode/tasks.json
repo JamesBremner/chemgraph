@@ -5,9 +5,7 @@
     "tasks": [
         {
             "label": "starter",
-            "options": {
-                "cwd": "${workspaceFolder}"
-               },
+            "options": {                "cwd": "${workspaceFolder}"},
             "command": "mingw32-make.exe",
             "args": [
                 "-f",
@@ -15,13 +13,21 @@
                 "starter"
             ],
 
-            "problemMatcher": [
-                "$gcc"
+            "problemMatcher": [                "$gcc"            ],
+            "group": {                "kind": "build",                "isDefault": true }
+        },
+        {
+            "label": "tst",
+            "options": {                "cwd": "${workspaceFolder}"},
+            "command": "mingw32-make.exe",
+            "args": [
+                "-f",
+                ".vscode/makefile",
+                "test"
             ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
+
+            "problemMatcher": [                "$gcc"            ],
+            "group": {                "kind": "build",                "isDefault": true }
         },
         {
             "label": "clean",

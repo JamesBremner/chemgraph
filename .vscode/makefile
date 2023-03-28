@@ -1,5 +1,5 @@
 #source file search paths
-VPATH = ./src ./src/ext
+VPATH = ./src ./src/ext ../raven-set
 
 	# compiler include search paths
 INCS = -I./src/ext \
@@ -30,6 +30,12 @@ OBJ_starter = \
 	$(ODIR)/cCompound.o \
 	$(ODIR)/chemgraph.o
 
+# sources
+OBJ_test = \
+	$(ODIR)/test.o \
+	$(ODIR)/cutest.o \
+	$(ODIR)/chemgraph.o 
+
 ### COMPILE
 
 $(ODIR)/%.o: %.cpp  cCompound.h
@@ -39,6 +45,11 @@ $(ODIR)/%.o: %.cpp  cCompound.h
 starter: $(OBJ_starter)
 	g++ $(OPT) \
 	-o bin/starter.exe $^  \
+	$(static_link_flags) $(LIBS)
+
+test: $(OBJ_test)
+	g++ -o bin/test.exe \
+	$^ $(OPT) \
 	$(static_link_flags) $(LIBS)
 
 .PHONY: clean
