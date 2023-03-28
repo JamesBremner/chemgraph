@@ -2,8 +2,10 @@
 #include <filesystem>
 #include <iostream>
 #include <fstream>
-#include "GraphTheory.h"
+
 #include "chemgraph.h"
+#include "GraphTheory.h"
+
 void cChemGraph::readSMILES(const std::string &sin)
 {
     clear();
@@ -119,115 +121,116 @@ void cChemGraph::read(const std::string &sin)
         lid = 'e';
     }
 }
-// std::string cChemGraph::viz()
-// {
-//     std::map<std::string,std::string> mpColor;
-//     mpColor.insert( {"C","grey"} );
-//     mpColor.insert( {"O","red"} );
-//     mpColor.insert( {"N","green"} );
+std::string cChemGraph::viz()
+{
+    std::map<std::string,std::string> mpColor;
+    mpColor.insert( {"C","grey"} );
+    mpColor.insert( {"O","red"} );
+    mpColor.insert( {"N","green"} );
 
-//     std::stringstream sviz;
-//     sviz << "graph G {\n";
-//     for (auto n : nodes())
-//     {
-//         sviz << n.second.myName
-//              << " [label=\"" << n.second.myColor
-//              << "\" color = \"" << mpColor[ n.second.myColor ]
-//              << "\"  penwidth = 3.0 ];\n";
-//     }
-//     for (auto &e : links())
-//     {
-//         if (e.first.first > e.first.second)
-//             continue;
-//         std::string color = "";
-//         if( e.second.myCost == 2 )
-//             color = " [penwidth = 3.0]";
-//         sviz << src(e).myName << "--"
-//              << dst(e).myName
-//              << color
-//              << "\n";
-//     }
-//     sviz << "}\n";
+    std::stringstream sviz;
+    sviz << "graph G {\n";
+    for (int ni = 0; ni < vertexCount(); ni++ )
+    {
+        auto atom = rVertexAttr(ni,0);
+        sviz << ni
+             << " [label=\"" <<atom
+             << "\" color = \"" << mpColor[ atom ]
+             << "\"  penwidth = 3.0 ];\n";
+    }
+    for (auto &e : edgeList())
+    {
+        std::string color = "";
+         if( rEdgeAttr(find(e.first,e.second),0) == "2" )
+             color = " [penwidth = 3.0]";
+        sviz << e.first << "--"
+             << e.second
+             << color
+             << "\n";
+    }
+    sviz << "}\n";
 
-//     auto path = std::filesystem::temp_directory_path();
-//     std::cout << "RunDOT " << path << "\n";
-//     auto gdot = path / "g.dot";
-//     std::ofstream f(gdot);
-//     if (!f.is_open())
-//         throw std::runtime_error("Cannot open " + gdot.string());
-//     f << sviz.str();
+    std::cout << sviz.str() << "\n";
 
-//     f.close();
+    auto path = std::filesystem::temp_directory_path();
+    std::cout << "RunDOT " << path << "\n";
+    auto gdot = path / "g.dot";
+    std::ofstream f(gdot);
+    if (!f.is_open())
+        throw std::runtime_error("Cannot open " + gdot.string());
+    f << sviz.str();
 
-//     STARTUPINFO si;
-//     PROCESS_INFORMATION pi;
+    f.close();
 
-//     ZeroMemory(&si, sizeof(si));
-//     si.cb = sizeof(si);
-//     ZeroMemory(&pi, sizeof(pi));
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
 
-//     auto sample = path / "sample.png";
-//     std::string scmd = "dot -Kfdp -n -Tpng -Tdot -o " + sample.string() + " " + gdot.string();
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    ZeroMemory(&pi, sizeof(pi));
 
-//     // std::cout << scmd << "\n";
+    auto sample = path / "sample.png";
+    std::string scmd = "dot -Kfdp -n -Tpng -Tdot -o " + sample.string() + " " + gdot.string();
 
-//     // Retain keyboard focus, minimize module2 window
-//     si.wShowWindow = SW_SHOWNOACTIVATE | SW_MINIMIZE;
-//     si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USEPOSITION;
-//     si.dwX = 600;
-//     si.dwY = 200;
+    // std::cout << scmd << "\n";
 
-//     if (!CreateProcess(NULL,                 // No module name (use command line)
-//                        (char *)scmd.c_str(), // Command line
-//                        NULL,                 // Process handle not inheritable
-//                        NULL,                 // Thread handle not inheritable
-//                        FALSE,                // Set handle inheritance to FALSE
-//                        CREATE_NEW_CONSOLE,   //  creation flags
-//                        NULL,                 // Use parent's environment block
-//                        NULL,                 // Use parent's starting directory
-//                        &si,                  // Pointer to STARTUPINFO structure
-//                        &pi)                  // Pointer to PROCESS_INFORMATION structure
-//     )
-//     {
-//         int syserrno = GetLastError();
-//         if (syserrno == 2)
-//         {
-//             std::cout <<
-//                 "Cannot find executable file\n"
-//                 "Is graphViz installed?\n";
+    // Retain keyboard focus, minimize module2 window
+    si.wShowWindow = SW_SHOWNOACTIVATE | SW_MINIMIZE;
+    si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USEPOSITION;
+    si.dwX = 600;
+    si.dwY = 200;
 
-//             return "";
-//         }
-//         std::cout << "system error\n";
-//         // SetStatusText(wxString::Format("Sysem error no (%d)\n", GetLastError()));
-//         // wchar_t *lpMsgBuf;
-//         // FormatMessage(
-//         //     FORMAT_MESSAGE_ALLOCATE_BUFFER |
-//         //         FORMAT_MESSAGE_FROM_SYSTEM |
-//         //         FORMAT_MESSAGE_IGNORE_INSERTS,
-//         //     NULL,
-//         //     (DWORD)syserrno,
-//         //     MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-//         //     (LPWSTR)&lpMsgBuf,
-//         //     0, NULL);
+    if (!CreateProcess(NULL,                 // No module name (use command line)
+                       (char *)scmd.c_str(), // Command line
+                       NULL,                 // Process handle not inheritable
+                       NULL,                 // Thread handle not inheritable
+                       FALSE,                // Set handle inheritance to FALSE
+                       CREATE_NEW_CONSOLE,   //  creation flags
+                       NULL,                 // Use parent's environment block
+                       NULL,                 // Use parent's starting directory
+                       &si,                  // Pointer to STARTUPINFO structure
+                       &pi)                  // Pointer to PROCESS_INFORMATION structure
+    )
+    {
+        int syserrno = GetLastError();
+        if (syserrno == 2)
+        {
+            std::cout <<
+                "Cannot find executable file\n"
+                "Is graphViz installed?\n";
 
-//         // char errorbuf[200];
-//         // snprintf(errorbuf, 199,
-//         //          "Error is %S",
-//         //          lpMsgBuf);
-//         // LocalFree(lpMsgBuf);
+            return "";
+        }
+        std::cout << "system error\n";
+        // SetStatusText(wxString::Format("Sysem error no (%d)\n", GetLastError()));
+        // wchar_t *lpMsgBuf;
+        // FormatMessage(
+        //     FORMAT_MESSAGE_ALLOCATE_BUFFER |
+        //         FORMAT_MESSAGE_FROM_SYSTEM |
+        //         FORMAT_MESSAGE_IGNORE_INSERTS,
+        //     NULL,
+        //     (DWORD)syserrno,
+        //     MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        //     (LPWSTR)&lpMsgBuf,
+        //     0, NULL);
 
-//         return "";
-//     }
+        // char errorbuf[200];
+        // snprintf(errorbuf, 199,
+        //          "Error is %S",
+        //          lpMsgBuf);
+        // LocalFree(lpMsgBuf);
 
-//     // Close process and thread handles.
-//     CloseHandle(pi.hProcess);
-//     CloseHandle(pi.hThread);
+        return "";
+    }
 
-//     Sleep(1000);
+    // Close process and thread handles.
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
 
-//     return sviz.str();
-// }
+    Sleep(1000);
+
+    return sviz.str();
+}
 
 std::map<std::string, int> cChemGraph::countAtoms()
 {

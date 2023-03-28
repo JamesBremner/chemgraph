@@ -8,6 +8,9 @@ TEST( readSMILES)
     auto mp = g.countAtoms();
     CHECK_EQUAL(2,mp["C"]);
     CHECK_EQUAL(1,mp["O"]);
+
+    g.readSMILES("C=CN");
+    g.viz();
 }
 
 TEST( readGraph )
