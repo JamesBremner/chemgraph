@@ -28,14 +28,16 @@ CCflags = -std=c++17 $(OPT) -D_mingw_
 OBJ_starter = \
 	$(ODIR)/main.o \
 	$(ODIR)/cCompound.o \
-	$(ODIR)/chemgraph.o
+	$(ODIR)/chemgraph.o \
+	$(ODIR)/cGraph.o \
 
 # sources
 OBJ_test = \
 	$(ODIR)/test.o \
 	$(ODIR)/cutest.o \
 	$(ODIR)/chemgraph.o \
-	$(ODIR)/cGraph.o 
+	$(ODIR)/cGraph.o \
+	$(ODIR)/GraphTheory.o 
 
 ### COMPILE
 

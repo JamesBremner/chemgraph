@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <iostream>
 #include <fstream>
+#include "GraphTheory.h"
 #include "chemgraph.h"
 void cChemGraph::readSMILES(const std::string &sin)
 {
@@ -9,7 +10,7 @@ void cChemGraph::readSMILES(const std::string &sin)
     char token;
     int branch;   // index of atom where branch occurs
     int src = -1; // index of atom waiting for bond
-    std::vector<int> ring(10,-1);
+    std::vector<int> ring(10, -1);
     int ringID;
     int bond = 1;
     bool closebracket = false;
@@ -26,7 +27,7 @@ void cChemGraph::readSMILES(const std::string &sin)
         case 'O':
             wVertexAttr(
                 add(std::to_string(idx)),
-                {std::string(1,token)});
+                {std::string(1, token)});
             idx++;
             if (src == -1)
             {
@@ -38,22 +39,22 @@ void cChemGraph::readSMILES(const std::string &sin)
             {
                 int ie = add(
                     std::to_string(branch),
-                     std::to_string(idx - 1));
-                wEdgeAttr(ie,{std::to_string(bond)});
+                    std::to_string(idx - 1));
+                wEdgeAttr(ie, {std::to_string(bond)});
                 closebracket = false;
             }
             else
             {
                 int ie = add(
                     std::to_string(src),
-                     std::to_string(idx - 1));
-                wEdgeAttr(ie,{std::to_string(bond)});
+                    std::to_string(idx - 1));
+                wEdgeAttr(ie, {std::to_string(bond)});
             }
             bond = 1;
             src = idx - 1;
             break;
 
-        case '=': 
+        case '=':
             bond = 2;
             break;
         case 'H':
@@ -71,8 +72,9 @@ void cChemGraph::readSMILES(const std::string &sin)
         case ')':
             closebracket = true;
             break;
-        case '1': case '2':
-            if( square )
+        case '1':
+        case '2':
+            if (square)
                 break;
             ringID = (int)token - 48;
             if (ring[ringID] == -1)
@@ -104,8 +106,8 @@ void cChemGraph::read(const std::string &sin)
         case 'n':
             iss >> nid;
             iss >> satom;
-            //findNode(findoradd(nid)).myColor = satom;
-            
+            // findNode(findoradd(nid)).myColor = satom;
+
             break;
 
         case 'l':
@@ -127,7 +129,7 @@ void cChemGraph::read(const std::string &sin)
 //     std::stringstream sviz;
 //     sviz << "graph G {\n";
 //     for (auto n : nodes())
-//     {   
+//     {
 //         sviz << n.second.myName
 //              << " [label=\"" << n.second.myColor
 //              << "\" color = \"" << mpColor[ n.second.myColor ]
@@ -227,35 +229,75 @@ void cChemGraph::read(const std::string &sin)
 //     return sviz.str();
 // }
 
-std::map<std::string,int> cChemGraph::countAtoms() 
+std::map<std::string, int> cChemGraph::countAtoms()
 {
-    std::map<std::string,int> mpCount;
-    for (int vi = 0; vi < vertexCount(); vi++ )
+    std::map<std::string, int> mpCount;
+    for (int vi = 0; vi < vertexCount(); vi++)
     {
-        mpCount[ rVertexAttr(vi,0) ]++;
+        mpCount[rVertexAttr(vi, 0)]++;
     }
     return mpCount;
 }
 
-    void cChemGraph::readNodeFeatures(const std::string &sin)
-    {
-        // each line is one feature value for every node
-        // std::string line;
-        // std::istringstream ssin( sin );
-        // while( getline(ssin, line))
-        // {
-        //     std::vector<int> vf;
-        //     std::istringstream sline( line );
-        //     for( int kn = 0; kn < nodeCount(); kn++ ) {
-        //         int v;
-        //         sline >> v;
-        //         vf.push_back( v );
+void cChemGraph::readNodeFeatures(const std::string &sin)
+{
+    // each line is one feature value for every node
+    // std::string line;
+    // std::istringstream ssin( sin );
+    // while( getline(ssin, line))
+    // {
+    //     std::vector<int> vf;
+    //     std::istringstream sline( line );
+    //     for( int kn = 0; kn < nodeCount(); kn++ ) {
+    //         int v;
+    //         sline >> v;
+    //         vf.push_back( v );
 
-        //     }
-        //     myNodeFeatures.push_back( vf );
-        // }
-    }
-    void cChemGraph::readBondFeatures(const std::string &sin)
-    {
+    //     }
+    //     myNodeFeatures.push_back( vf );
+    // }
+}
+void cChemGraph::readBondFeatures(const std::string &sin)
+{
+}
 
+void cChemGraph::graphtoSMILES(const raven::graph::cGraph &g)
+{
+    std::string SMILES;                 // the SMILES representation of the chemical graph
+    std::vector<std::string> vLabel;    // the label locations
+
+    // remove bonds to Hydrogen
+    raven::graph::cGraph noH = g;
+    for (auto &bond : noH.edgeList())
+    {
+        if (noH.userName(bond.first)[0] == 'H' || noH.userName(bond.second)[0] == 'H')
+            noH.remove(bond.first, bond.second);
     }
+
+    // depth first search of graph
+    dfs(noH, 0,
+        [&](int v)
+        {
+            // get the atom label
+            auto label = noH.userName(v);
+
+            switch (label[0])
+            {
+            case 'C':
+            case 'O':
+            case 'N':
+                vLabel.push_back(label);
+                SMILES += label[0];
+                break;
+            default:
+                vLabel.push_back("-");
+                break;
+            }
+            return true;
+        });
+
+    std::cout << "SMILES: " << SMILES << "\n";
+    std::cout << "\nlabel locations in SMILES string:\n";
+    for (int k = 0; k < vLabel.size(); k++)
+        std::cout << k << "\t" << vLabel[k] << "\n";
+}

@@ -7,7 +7,9 @@ public:
     /// @brief read SMILES string
     /// @param sin SMILES string
     void readSMILES(const std::string &sin);
-    
+
+    void graphtoSMILES( const raven::graph::cGraph& g );
+
     void readNodeFeatures(const std::string &sin);
     void readBondFeatures(const std::string &sin);
     // bool fragment(
