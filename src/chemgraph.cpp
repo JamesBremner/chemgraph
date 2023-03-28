@@ -123,26 +123,26 @@ void cChemGraph::read(const std::string &sin)
 }
 std::string cChemGraph::viz()
 {
-    std::map<std::string,std::string> mpColor;
-    mpColor.insert( {"C","grey"} );
-    mpColor.insert( {"O","red"} );
-    mpColor.insert( {"N","green"} );
+    std::map<std::string, std::string> mpColor;
+    mpColor.insert({"C", "grey"});
+    mpColor.insert({"O", "red"});
+    mpColor.insert({"N", "green"});
 
     std::stringstream sviz;
     sviz << "graph G {\n";
-    for (int ni = 0; ni < vertexCount(); ni++ )
+    for (int ni = 0; ni < vertexCount(); ni++)
     {
-        auto atom = rVertexAttr(ni,0);
+        auto atom = rVertexAttr(ni, 0);
         sviz << ni
-             << " [label=\"" <<atom
-             << "\" color = \"" << mpColor[ atom ]
+             << " [label=\"" << atom
+             << "\" color = \"" << mpColor[atom]
              << "\"  penwidth = 3.0 ];\n";
     }
     for (auto &e : edgeList())
     {
         std::string color = "";
-         if( rEdgeAttr(find(e.first,e.second),0) == "2" )
-             color = " [penwidth = 3.0]";
+        if (rEdgeAttr(find(e.first, e.second), 0) == "2")
+            color = " [penwidth = 3.0]";
         sviz << e.first << "--"
              << e.second
              << color
@@ -195,9 +195,8 @@ std::string cChemGraph::viz()
         int syserrno = GetLastError();
         if (syserrno == 2)
         {
-            std::cout <<
-                "Cannot find executable file\n"
-                "Is graphViz installed?\n";
+            std::cout << "Cannot find executable file\n"
+                         "Is graphViz installed?\n";
 
             return "";
         }
@@ -264,10 +263,10 @@ void cChemGraph::readBondFeatures(const std::string &sin)
 {
 }
 
-void cChemGraph::graphtoSMILES(const raven::graph::cGraph &g)
+std::string cChemGraph::graphtoSMILES(const raven::graph::cGraph &g)
 {
-    std::string SMILES;                 // the SMILES representation of the chemical graph
-    std::vector<std::string> vLabel;    // the label locations
+    std::string SMILES;              // the SMILES representation of the chemical graph
+    std::vector<std::string> vLabel; // the label locations
 
     // remove bonds to Hydrogen
     raven::graph::cGraph noH = g;
@@ -278,9 +277,20 @@ void cChemGraph::graphtoSMILES(const raven::graph::cGraph &g)
     }
 
     // depth first search of graph
+    int prev = -1;
     dfs(noH, 0,
         [&](int v)
         {
+            // check for double bond
+            if (prev != -1)
+            {
+                if (noH.rEdgeAttr(noH.find(prev, v), 0) == "2")
+                {
+                    SMILES += "=";
+                    vLabel.push_back("-");
+                }
+            }
+
             // get the atom label
             auto label = noH.userName(v);
 
@@ -296,6 +306,9 @@ void cChemGraph::graphtoSMILES(const raven::graph::cGraph &g)
                 vLabel.push_back("-");
                 break;
             }
+
+            prev = v;
+
             return true;
         });
 
@@ -303,4 +316,6 @@ void cChemGraph::graphtoSMILES(const raven::graph::cGraph &g)
     std::cout << "\nlabel locations in SMILES string:\n";
     for (int k = 0; k < vLabel.size(); k++)
         std::cout << k << "\t" << vLabel[k] << "\n";
+
+    return SMILES;
 }

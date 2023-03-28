@@ -18,9 +18,9 @@ TEST( readGraph )
     raven::graph::cGraph ingraph;
     ingraph.add( "C1","H1");
     ingraph.add( "C1","H2");
-    ingraph.add( "C1","H3");
-    ingraph.add( "C1","C2");
-    ingraph.add( "C2","H4");
+    ingraph.wEdgeAttr(
+        ingraph.add( "C1","C2"),
+        {"2"});                      // double bond
     ingraph.add( "C2","H5");
     ingraph.add( "C2","O1");
     ingraph.add( "C1","H6");
