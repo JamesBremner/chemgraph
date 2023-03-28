@@ -1,5 +1,5 @@
 #source file search paths
-VPATH = ./src ./src/ext ../raven-set
+VPATH = ./src ./src/ext ../raven-set ../pathfinder/src
 
 	# compiler include search paths
 INCS = -I./src/ext \
@@ -34,7 +34,8 @@ OBJ_starter = \
 OBJ_test = \
 	$(ODIR)/test.o \
 	$(ODIR)/cutest.o \
-	$(ODIR)/chemgraph.o 
+	$(ODIR)/chemgraph.o \
+	$(ODIR)/cGraph.o 
 
 ### COMPILE
 
