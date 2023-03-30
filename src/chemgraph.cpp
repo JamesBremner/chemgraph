@@ -263,28 +263,38 @@ void cChemGraph::readBondFeatures(const std::string &sin)
 {
 }
 
-std::string cChemGraph::graphtoSMILES(const raven::graph::cGraph &g)
+std::string cChemGraph::graphtoSMILES(const raven::graph::cGraph &ingraph)
 {
     std::string SMILES;              // the SMILES representation of the chemical graph
     std::vector<std::string> vLabel; // the label locations
 
+    raven::graph::cGraph g = ingraph;
+
     // remove bonds to Hydrogen
-    raven::graph::cGraph noH = g;
-    for (auto &bond : noH.edgeList())
+    for (auto &bond : g.edgeList())
     {
-        if (noH.userName(bond.first)[0] == 'H' || noH.userName(bond.second)[0] == 'H')
-            noH.remove(bond.first, bond.second);
+        if (g.userName(bond.first)[0] == 'H' || g.userName(bond.second)[0] == 'H')
+            g.remove(bond.first, bond.second);
+    }
+
+    // check for cycles
+    auto vCycle = dfs_cycle_finder(g);
+    for (int k = 0; k < vCycle.size(); k++)
+    {
+        g.remove(vCycle[k][0], vCycle[k][1]);
+        g.wVertexAttr(vCycle[k][0], {std::to_string(k + 1)});
+        g.wVertexAttr(vCycle[k][1], {std::to_string(k + 1)});
     }
 
     // depth first search of graph
     int prev = -1;
-    dfs(noH, 0,
+    dfs(g, 0,
         [&](int v)
         {
             // check for double bond
             if (prev != -1)
             {
-                if (noH.rEdgeAttr(noH.find(prev, v), 0) == "2")
+                if (g.rEdgeAttr(g.find(prev, v), 0) == "2")
                 {
                     SMILES += "=";
                     vLabel.push_back("-");
@@ -292,7 +302,7 @@ std::string cChemGraph::graphtoSMILES(const raven::graph::cGraph &g)
             }
 
             // get the atom label
-            auto label = noH.userName(v);
+            auto label = g.userName(v);
 
             switch (label[0])
             {
@@ -305,6 +315,14 @@ std::string cChemGraph::graphtoSMILES(const raven::graph::cGraph &g)
             default:
                 vLabel.push_back("-");
                 break;
+            }
+
+            // check for cycle break
+            auto kc = g.rVertexAttr(v, 0);
+            if (!kc.empty())
+            {
+                SMILES += kc;
+                vLabel.push_back("-");
             }
 
             prev = v;
